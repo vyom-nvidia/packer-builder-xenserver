@@ -103,6 +103,9 @@ each category, the available options are alphabetized and described.
 * `convert_to_template` (boolean) - Whether to convert the VM to a template
   prior to exporting. Default is `false`.
 
+* `disk_drives` (integer) - How many DVD drives to keep on the exported VM.
+  Default is 0.
+
 * `disk_size` (integer) - The size, in megabytes, of the hard disk to create
   for the VM. By default, this is 40000 (about 40 GB).
 
