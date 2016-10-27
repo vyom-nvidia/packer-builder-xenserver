@@ -110,6 +110,10 @@ each category, the available options are alphabetized and described.
 * `convert_to_template` (boolean) - Whether to convert the VM to a template
   prior to exporting. Default is `false`.
 
+* `destroy_vifs` (boolean) - Whether to destroy VIFs on the VM prior to
+  exporting. Removing them may make the image more generic and reusable.
+  Default is `false`.
+
 * `disk_drives` (integer) - How many DVD drives to keep on the exported VM.
   Default is 0.
 

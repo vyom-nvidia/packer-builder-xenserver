@@ -319,6 +319,7 @@ func (self *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (pa
 		},
 		new(xscommon.StepConfigureDiskDrives),
 		new(xscommon.StepConvertToTemplate),
+		new(xscommon.StepDestroyVIFs),
 		new(xscommon.StepExport),
 	}
 
