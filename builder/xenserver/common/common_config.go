@@ -51,7 +51,7 @@ type CommonConfig struct {
 	SSHWaitTimeout    time.Duration
 
 	ConvertToTemplate bool `mapstructure:"convert_to_template"`
-	DestroyVIFs bool `mapstructure:"destroy_vifs"`
+	DestroyVIFs       bool `mapstructure:"destroy_vifs"`
 
 	OutputDir string `mapstructure:"output_directory"`
 	Format    string `mapstructure:"format"`
