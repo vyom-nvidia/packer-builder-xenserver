@@ -39,6 +39,8 @@ type CommonConfig struct {
 	HTTPPortMin uint   `mapstructure:"http_port_min"`
 	HTTPPortMax uint   `mapstructure:"http_port_max"`
 
+	Communicator string `mapstructure:"communicator"`
+
 	//	SSHHostPortMin    uint   `mapstructure:"ssh_host_port_min"`
 	//	SSHHostPortMax    uint   `mapstructure:"ssh_host_port_max"`
 	SSHKeyPath  string `mapstructure:"ssh_key_path"`
@@ -49,6 +51,10 @@ type CommonConfig struct {
 
 	RawSSHWaitTimeout string `mapstructure:"ssh_wait_timeout"`
 	SSHWaitTimeout    time.Duration
+
+	ConvertToTemplate bool `mapstructure:"convert_to_template"`
+	DestroyVIFs       bool `mapstructure:"destroy_vifs"`
+	DiskDrives        uint `mapstructure:"disk_drives"`
 
 	OutputDir string `mapstructure:"output_directory"`
 	Format    string `mapstructure:"format"`
@@ -174,7 +180,7 @@ func (c *CommonConfig) Prepare(ctx *interpolate.Context, pc *common.PackerConfig
 		}
 	*/
 
-	if c.SSHUser == "" {
+	if c.SSHUser == "" && c.Communicator != "winrm" {
 		errs = append(errs, errors.New("An ssh_username must be specified."))
 	}
 
@@ -186,7 +192,7 @@ func (c *CommonConfig) Prepare(ctx *interpolate.Context, pc *common.PackerConfig
 	switch c.Format {
 	case "xva", "xva_compressed", "vdi_raw", "vdi_vhd", "none":
 	default:
-		errs = append(errs, errors.New("format must be one of 'xva', 'vdi_raw', 'vdi_vhd', 'none'"))
+		errs = append(errs, errors.New("format must be one of 'xva', 'xva_compressed', 'vdi_raw', 'vdi_vhd', 'none'"))
 	}
 
 	switch c.KeepVM {

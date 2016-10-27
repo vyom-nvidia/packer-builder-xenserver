@@ -53,6 +53,7 @@ func (self *Builder) Prepare(raws ...interface{}) (params []string, retErr error
 
 	errs = packer.MultiErrorAppend(
 		errs, self.config.CommonConfig.Prepare(&self.config.ctx, &self.config.PackerConfig)...)
+	errs = packer.MultiErrorAppend(errs, self.config.SSHConfig.Prepare(&self.config.ctx)...)
 
 	// Set default values
 
@@ -136,6 +137,7 @@ func (self *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (pa
 		},
 		new(stepInstantiateTemplate),
 		new(stepImportInstance),
+		new(xscommon.StepConfigureNetworking),
 		&xscommon.StepAttachVdi{
 			VdiUuidKey: "floppy_vdi_uuid",
 			VdiType:    xsclient.Floppy,
@@ -182,6 +184,9 @@ func (self *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (pa
 		&xscommon.StepDetachVdi{
 			VdiUuidKey: "tools_vdi_uuid",
 		},
+		new(xscommon.StepConfigureDiskDrives),
+		new(xscommon.StepConvertToTemplate),
+		new(xscommon.StepDestroyVIFs),
 		new(xscommon.StepExport),
 	}
 
