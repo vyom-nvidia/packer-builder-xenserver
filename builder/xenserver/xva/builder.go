@@ -184,7 +184,7 @@ func (self *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (pa
 		&xscommon.StepDetachVdi{
 			VdiUuidKey: "tools_vdi_uuid",
 		},
-		new(xscommon.StepConfigureDiskDrives),
+		new(xscommon.StepConfigureDiscDrives),
 		new(xscommon.StepConvertToTemplate),
 		new(xscommon.StepDestroyVIFs),
 		new(xscommon.StepExport),

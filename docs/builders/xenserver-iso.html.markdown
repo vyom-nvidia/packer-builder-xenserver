@@ -116,7 +116,7 @@ each category, the available options are alphabetized and described.
   exporting. Removing them may make the image more generic and reusable.
   Default is `false`.
 
-* `disk_drives` (integer) - How many DVD drives to keep on the exported VM.
+* `disc_drives` (integer) - How many DVD drives to keep on the exported VM.
   Default is 0.
 
 * `disk_size` (integer) - The size, in megabytes, of the hard disk to create

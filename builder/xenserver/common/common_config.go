@@ -54,7 +54,7 @@ type CommonConfig struct {
 
 	ConvertToTemplate bool `mapstructure:"convert_to_template"`
 	DestroyVIFs       bool `mapstructure:"destroy_vifs"`
-	DiskDrives        uint `mapstructure:"disk_drives"`
+	DiscDrives        int  `mapstructure:"disc_drives"`
 
 	OutputDir string `mapstructure:"output_directory"`
 	Format    string `mapstructure:"format"`
@@ -187,6 +187,10 @@ func (c *CommonConfig) Prepare(ctx *interpolate.Context, pc *common.PackerConfig
 	c.SSHWaitTimeout, err = time.ParseDuration(c.RawSSHWaitTimeout)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("Failed to parse ssh_wait_timeout: %s", err))
+	}
+
+	if c.DiscDrives < 0 {
+		errs = append(errs, errors.New("disc_drives greater than or equal to 0."))
 	}
 
 	switch c.Format {
