@@ -12,7 +12,6 @@ import (
 
 type stepImportInstance struct {
 	instance *xsclient.VM
-	vdi      *xsclient.VDI
 }
 
 func (self *stepImportInstance) Run(state multistep.StateBag) multistep.StepAction {
@@ -69,19 +68,25 @@ func (self *stepImportInstance) Run(state multistep.StateBag) multistep.StepActi
 	}
 	state.Put("instance_uuid", instanceId)
 
-	err = instance.SetIsATemplate(false)
+	self.instance, err = client.GetVMByUuid(instanceId)
+	if err != nil {
+		ui.Error(fmt.Sprintf("Unable to get VM from UUID '%s': %s", instanceId, err.Error()))
+		return multistep.ActionHalt
+	}
+
+	err = self.instance.SetIsATemplate(false)
 	if err != nil {
 		ui.Error(fmt.Sprintf("Error converting template to a VM: %s", err.Error()))
 		return multistep.ActionHalt
 	}
 
-	err = instance.SetNameLabel(config.VMName)
+	err = self.instance.SetNameLabel(config.VMName)
 	if err != nil {
 		ui.Error(fmt.Sprintf("Error setting VM name: %s", err.Error()))
 		return multistep.ActionHalt
 	}
 
-	err = instance.SetDescription(config.VMDescription)
+	err = self.instance.SetDescription(config.VMDescription)
 	if err != nil {
 		ui.Error(fmt.Sprintf("Error setting VM description: %s", err.Error()))
 		return multistep.ActionHalt
@@ -93,29 +98,56 @@ func (self *stepImportInstance) Run(state multistep.StateBag) multistep.StepActi
 }
 
 func (self *stepImportInstance) Cleanup(state multistep.StateBag) {
-	/*
-		config := state.Get("config").(config)
-		if config.ShouldKeepVM(state) {
-			return
+	config := state.Get("config").(config)
+	if config.ShouldKeepVM(state) {
+		return
+	}
+
+	ui := state.Get("ui").(packer.Ui)
+
+	// We want to perform a 'xe vm-uninstall'
+	// Uninstall a VM. This operation will destroy those VDIs that are marked RW and connected to this VM only.
+	if self.instance != nil {
+		vbds, err := self.instance.GetVBDs()
+		if err != nil {
+			ui.Error(err.Error())
 		}
 
-		ui := state.Get("ui").(packer.Ui)
-
-		if self.instance != nil {
-			ui.Say("Destroying VM")
-			_ = self.instance.HardShutdown() // redundant, just in case
-			err := self.instance.Destroy()
+		// Destroy VDIs before destroying VM, since vm.Destroy() also destroys VBDs,
+		// in which case we will be unable to find the VDIs
+		for _, vbd := range vbds {
+			vbd_rec, err := vbd.GetRecord()
 			if err != nil {
 				ui.Error(err.Error())
+				continue
+			}
+			if vbd_rec["mode"].(string) == "RW" {
+				vdi, err := vbd.GetVDI()
+				if err != nil {
+					ui.Error(err.Error())
+					continue
+				}
+				vdi_vbds, err := vdi.GetVBDs()
+				if err != nil {
+					ui.Error(err.Error())
+					continue
+				}
+				// If connected to this VM only
+				if len(vdi_vbds) <= 1 {
+					ui.Say("Destroying VDI")
+					err = vdi.Destroy()
+					if err != nil {
+						ui.Error(err.Error())
+					}
+				}
 			}
 		}
 
-		if self.vdi != nil {
-			ui.Say("Destroying VDI")
-			err := self.vdi.Destroy()
-			if err != nil {
-				ui.Error(err.Error())
-			}
+		ui.Say("Destroying VM")
+		_ = self.instance.HardShutdown()
+		err = self.instance.Destroy()
+		if err != nil {
+			ui.Error(err.Error())
 		}
-	*/
+	}
 }
