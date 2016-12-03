@@ -19,11 +19,12 @@ type CommonConfig struct {
 	HostIp     string `mapstructure:"remote_host"`
 	XenSSHPort uint   `mapstructure:"remote_ssh_port"`
 
-	VMName        string   `mapstructure:"vm_name"`
-	VMDescription string   `mapstructure:"vm_description"`
-	SrName        string   `mapstructure:"sr_name"`
-	FloppyFiles   []string `mapstructure:"floppy_files"`
-	NetworkNames  []string `mapstructure:"network_names"`
+	VMName             string   `mapstructure:"vm_name"`
+	VMDescription      string   `mapstructure:"vm_description"`
+	SrName             string   `mapstructure:"sr_name"`
+	FloppyFiles        []string `mapstructure:"floppy_files"`
+	NetworkNames       []string `mapstructure:"network_names"`
+	ExportNetworkNames []string `mapstructure:"export_network_names"`
 
 	HostPortMin uint `mapstructure:"host_port_min"`
 	HostPortMax uint `mapstructure:"host_port_max"`
@@ -42,6 +43,8 @@ type CommonConfig struct {
 	HTTPPortMin uint   `mapstructure:"http_port_min"`
 	HTTPPortMax uint   `mapstructure:"http_port_max"`
 
+	Communicator string `mapstructure:"communicator"`
+
 	//	SSHHostPortMin    uint   `mapstructure:"ssh_host_port_min"`
 	//	SSHHostPortMax    uint   `mapstructure:"ssh_host_port_max"`
 	SSHKeyPath  string `mapstructure:"ssh_key_path"`
@@ -52,6 +55,10 @@ type CommonConfig struct {
 
 	RawSSHWaitTimeout string `mapstructure:"ssh_wait_timeout"`
 	SSHWaitTimeout    time.Duration
+
+	ConvertToTemplate bool `mapstructure:"convert_to_template"`
+	DestroyVIFs       bool `mapstructure:"destroy_vifs"`
+	DiscDrives        int  `mapstructure:"disc_drives"`
 
 	OutputDir string `mapstructure:"output_directory"`
 	Format    string `mapstructure:"format"`
@@ -181,7 +188,7 @@ func (c *CommonConfig) Prepare(ctx *interpolate.Context, pc *common.PackerConfig
 		}
 	*/
 
-	if c.SSHUser == "" {
+	if c.SSHUser == "" && c.Communicator != "winrm" {
 		errs = append(errs, errors.New("An ssh_username must be specified."))
 	}
 
@@ -190,10 +197,14 @@ func (c *CommonConfig) Prepare(ctx *interpolate.Context, pc *common.PackerConfig
 		errs = append(errs, fmt.Errorf("Failed to parse ssh_wait_timeout: %s", err))
 	}
 
+	if c.DiscDrives < 0 {
+		errs = append(errs, errors.New("disc_drives greater than or equal to 0."))
+	}
+
 	switch c.Format {
 	case "xva", "xva_compressed", "vdi_raw", "vdi_vhd", "none":
 	default:
-		errs = append(errs, errors.New("format must be one of 'xva', 'vdi_raw', 'vdi_vhd', 'none'"))
+		errs = append(errs, errors.New("format must be one of 'xva', 'xva_compressed', 'vdi_raw', 'vdi_vhd', 'none'"))
 	}
 
 	switch c.KeepVM {
