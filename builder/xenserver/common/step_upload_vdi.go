@@ -86,9 +86,11 @@ func (self *StepUploadVdi) Cleanup(state multistep.StateBag) {
 
 	vdiName := self.VdiNameFunc()
 
-	if config.ShouldKeepVM(state) {
-		return
-	}
+	// Always clean up the uploaded vdi
+	//
+	// if config.ShouldKeepVM(state) {
+	// 	return
+	// }
 
 	vdiUuidRaw, ok := state.GetOk(self.VdiUuidKey)
 	if !ok {
