@@ -201,16 +201,16 @@ func (c *Communicator) newWinRMClient() (*winrm.Client, error) {
          */
 	}
 	params := winrm.NewParameters(
-		winrm.DefaultParameters.Timeout,
-		winrm.DefaultParameters.Locale,
-		winrm.DefaultParameters.EnvelopeSize,
+		"PT60S",
+		"en-US",
+		153600
 	)
 
 	params.TransportDecorator = c.config.TransportDecorator
 	params.Timeout = "PT3M"
 
 	client, err := winrm.NewClientWithParameters(
-		endpoint, conf.Auth.User, conf.Auth.Password, params)
+		endpoint, c.config.Username, c.config.Password, params)
 	return client, err
 }
 
