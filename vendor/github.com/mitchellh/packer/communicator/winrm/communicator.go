@@ -203,7 +203,7 @@ func (c *Communicator) newWinRMClient() (*winrm.Client, error) {
 	params := winrm.NewParameters(
 		"PT60S",
 		"en-US",
-		153600
+		153600,
 	)
 
 	params.TransportDecorator = c.config.TransportDecorator
