@@ -22,6 +22,8 @@ type config struct {
 	common.PackerConfig   `mapstructure:",squash"`
 	xscommon.CommonConfig `mapstructure:",squash"`
 
+	VCPUsMax       uint              `mapstructure:"vcpus_max"`
+	VCPUsAtStartup uint              `mapstructure:"vcpus_atstartup"`
 	VMMemory      uint              `mapstructure:"vm_memory"`
 	DiskSize      uint              `mapstructure:"disk_size"`
 	CloneTemplate string            `mapstructure:"clone_template"`
@@ -69,7 +71,18 @@ func (self *Builder) Prepare(raws ...interface{}) (params []string, retErr error
 	errs = packer.MultiErrorAppend(errs, self.config.SSHConfig.Prepare(&self.config.ctx)...)
 
 	// Set default values
+	if self.config.VCPUsMax == 0 {
+		self.config.VCPUsMax = 1
+	}
 
+	if self.config.VCPUsAtStartup == 0 {
+		self.config.VCPUsAtStartup = 1
+	}
+
+	if self.config.VCPUsAtStartup > self.config.VCPUsMax {
+		self.config.VCPUsAtStartup = self.config.VCPUsMax
+	}
+	
 	if self.config.RawInstallTimeout == "" {
 		self.config.RawInstallTimeout = "200m"
 	}
