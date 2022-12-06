@@ -71,6 +71,18 @@ func (self *stepInstantiateTemplate) Run(state multistep.StateBag) multistep.Ste
 	}
 	state.Put("instance_uuid", instanceId)
 
+	err = instance.SetVCPUsMax(config.VCPUsMax)
+	if err != nil {
+		ui.Error(fmt.Sprintf("Error setting VM VCPUs Max=%d: %s", config.VCPUsMax, err.Error()))
+		return multistep.ActionHalt
+	}
+
+	err = instance.SetVCPUsAtStartup(config.VCPUsAtStartup)
+	if err != nil {
+		ui.Error(fmt.Sprintf("Error setting VM VCPUs At Startup=%d: %s", config.VCPUsAtStartup, err.Error()))
+		return multistep.ActionHalt
+	}
+
 	err = self.instance.SetIsATemplate(false)
 	if err != nil {
 		ui.Error(fmt.Sprintf("Error converting template to a VM: %s", err.Error()))
